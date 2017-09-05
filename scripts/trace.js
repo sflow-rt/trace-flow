@@ -4,7 +4,7 @@
 // description: Top Flows
 // copyright: Copyright (c) 2017 InMon Corp. ALL RIGHTS RESERVED
 
-var keys = 'inputifindex,outputifindex,or:ipttl:ip6ttl';
+var keys = 'inputifindex,outputifindex';
 var value = 'frames';
 
 var userFlows = {};
@@ -61,7 +61,7 @@ function getTopology(name) {
     let agent = entry.agent;
     let keys = entry.topKeys;
     for(var j = 0; j < keys.length; j++) {
-      let [input,output,ttl] = keys[j].key.split(',');
+      let [input,output] = keys[j].key.split(',');
       let link = topologyInterfaceToLink(agent,input);
       if(link) {
         updateTopology(top,link.linkname,link.remotenode,link.localnode);
