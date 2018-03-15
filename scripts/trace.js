@@ -30,8 +30,8 @@ function flowSpecName(filter) {
   return entry.name;
 }
 
-setIntervalHandler(function() {
-  var key, entry, now = (new Date()).getTime();
+setIntervalHandler(function(now) {
+  var key, entry;
   for(key in userFlows) {
     entry = userFlows[key];
     if(now - entry.lastQuery > 10000) {
