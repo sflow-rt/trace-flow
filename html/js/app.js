@@ -90,17 +90,15 @@ $(function() {
     pollTrace();
   });
 
-  $(document).ready(function() {
-    nodes = new vis.DataSet([]);
-    edges = new vis.DataSet([]);
+  nodes = new vis.DataSet([]);
+  edges = new vis.DataSet([]);
 
-    var container = document.getElementById('trace');
+  var container = document.getElementById('trace');
 
-    var data = {nodes:nodes, edges:edges};
-    var options = {
-      physics: {solver:'repulsion'},
-      edges: {arrows:'to'}
-    }; 
-    network = new vis.Network(container, data, options);   
-  });
+  var data = {nodes:nodes, edges:edges};
+  var options = {
+    physics: {solver:'repulsion'},
+    edges: {arrows:'to'}
+  }; 
+  network = new vis.Network(container, data, options);   
 });
