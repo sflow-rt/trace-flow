@@ -1,10 +1,12 @@
 // author: InMon Corp.
 // version: 2.0
-// date: 11/17/2021
-// description: Top Flows
+// date: 11/18/2021
+// description: Trace packet paths across topology
 // copyright: Copyright (c) 2017-2021 InMon Corp. ALL RIGHTS RESERVED
 
-var minValue = getSystemProperty('sunburst.minValue') || 1;
+var t = getSystemProperty('trace-flow.t') || 10;
+var n = getSystemProperty('trace-flow.n') || 10;
+var minValue = getSystemProperty('trace-flow.minValue') || 1;
 
 var keys = 'inputifindex,outputifindex';
 var value = 'frames';
@@ -18,7 +20,7 @@ function flowSpecName(filter) {
   if(!entry) {
     var name = 'trace_flow_' + specID;
     try {
-      setFlow(name,{keys:keys,value:value,filter:filter,t:10,n:10});
+      setFlow(name,{keys:keys,value:value,filter:filter,t:t,n:n});
       entry = {name:name};
       userFlows[filter] = entry;
       specID++;
@@ -28,7 +30,7 @@ function flowSpecName(filter) {
     }
   }
   if(!entry) return null;
-  entry.lastQuery = (new Date()).getTime();
+  entry.lastQuery = Date.now();
   return entry.name;
 }
 

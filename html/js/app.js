@@ -46,8 +46,11 @@ $(function() {
       entry = data.edges[edge]; 
       if(!edges.get(edge)) edges.add({id:edge,label:entry.label||edge,from:entry.from,to:entry.to,arrows:entry.bidirectional?'to;from':'to'});
       else {
-        if(entry.bidirectional && 'to' === edges.get(edge).arrows) {
-          edges.update({id:edge,arrows:'to;from'});
+        var arrows = 'to';
+        if(entry.bidirectional) arrows = 'to;from';
+        else if(entry.from !== edges.get(edge).from) arrows = 'from';
+        if(arrows !== edges.get(edge).arrows) {
+          edges.update({id:edge,arrows:arrows});
         }
       }
     }
