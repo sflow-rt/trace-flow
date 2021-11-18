@@ -1,11 +1,7 @@
-body { font-family: Verdana,Arial,sans-serif; }
-.ui-autocomplete {
-  font-size: 80%;
-  max-height: 200px;
-  overflow-y: scroll;
-  overflow-x: hidden;
+.twitter-typeahead, .tt-hint, .tt-input, .tt-menu { width: 100%; }
+.dropdown-menu, span.twitter-typeahead .tt-menu {
+  max-height: 150px;
+  overflow-y: auto;
 }
-fieldset { border-radius: 4px; border-width:2px; border-color:#f5f5f5; margin-bottom: 10px; }
-#flowspec { text-align: center; width:100%; }
-#filter { width:80%; }
+
 #trace { height:500px; }

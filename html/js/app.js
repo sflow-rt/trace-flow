@@ -2,17 +2,54 @@ $(function() {
   var keysURL  = '../scripts/trace.js/flowkeys/json';
   var traceURL = '../scripts/trace.js/trace/json';
 
-  var nodes, edges, network, filter='';
+  $('a[href="#"]').on('click', function(e) {
+    e.preventDefault();
+  });
+
+  var filter;
+  var search = window.location.search;
+  if(search) {
+    search.substring(1).split('&').forEach(function(el) {
+      var pair = el.split('=');
+      if(pair.length === 2) {
+        if('filter' === decodeURIComponent(pair[0])) {
+          filter = decodeURIComponent(pair[1]);
+        }
+      }
+    });
+  }
+  if(filter) {
+    window.sessionStorage.setItem('trace_flow_filter', filter);
+  } else {
+    filter = window.sessionStorage.getItem('trace_flow_filter') || '';
+  }
+
+  var nodes = new vis.DataSet([]);
+  var edges = new vis.DataSet([]);
+
+  var container = document.getElementById('trace');
+
+  var data = {nodes:nodes, edges:edges};
+  var options = {
+    physics: {solver:'repulsion'}
+  };
+  var network = new vis.Network(container, data, options);
 
   function updateTrace(data) {
     var node, edge, entry, ids, i;
     if(!data.nodes || !data.edges) return;
     for(node in data.nodes) {
-      if(!nodes.get(node)) nodes.add({id:node,label:node}); 
+      entry = data.nodes[node];
+      if(!nodes.get(node)) nodes.add({id:node,label:entry.label||node,shape:entry.port?'box':'ellipse'}); 
     }
     for(edge in data.edges) {
       entry = data.edges[edge]; 
-      if(!edges.get(edge)) edges.add({id:edge,label:edge,from:entry.from,to:entry.to});
+      if(!edges.get(edge)) edges.add({id:edge,label:entry.label||edge,from:entry.from,to:entry.to,arrows:entry.bidirectional?'to;from':'to'});
+      else {
+        if(entry.bidirectional && 'to' === edges.get(edge).arrows) {
+          edges.update({id:edge,arrows:'to;from'});
+        }
+      }
     }
     ids = nodes.getIds();
     for(i = 0; i < ids.length; i++) {
@@ -41,7 +78,10 @@ $(function() {
         }
       },
       error: function(result,status,errorThrown) {
-        if(running_trace) timeout_trace = setTimeout(pollTrace, 5000);
+        if(running_trace) {
+          updateTrace({nodes:{},edges:{}});
+          timeout_trace = setTimeout(pollTrace, 5000);
+        }
       }
     });
   }
@@ -51,54 +91,76 @@ $(function() {
     if(timeout_trace) clearTimeout(timeout_trace);
   }
 
+  function split(str,pat) {
+    var re = new RegExp(pat,'g');
+    var end = 0;
+    while(re.test(str)) { end = re.lastIndex; }
+    return [ str.substring(0,end), str.substring(end) ];
+  }
+
+  var sep_filter = '[&|(]';
+  function filterSuggestions(q, sync, async) {
+    var parts = split(q,sep_filter);
+    var prefix = parts[0];
+    var suffix = parts[1]; 
+    $.getJSON(keysURL, { search: suffix }, function(suggestedToken) {
+      if(suggestedToken.length === 1 && suggestedToken[0] === suffix) return;
+      var suggestions = [];
+      for (var i = 0; i < suggestedToken.length; i++) {
+        suggestions.push(prefix + suggestedToken[i]);
+      }
+      async(suggestions); 
+    });
+  }
+
   $('#filter')
     .val(filter)
-    .bind("keydown", function(event) {
-      if (event.keyCode === $.ui.keyCode.TAB &&
-        $(this).autocomplete("instance").menu.active ) {
-          event.preventDefault();
-        }
-    })
-    .autocomplete({
-      minLength: 0,
-      source: function( request, response) {
-        $.getJSON(keysURL, { search: request.term.split(/[&|(]\s*/).pop() }, response)
+    .typeahead(
+      {
+        highlight: true,
+        minLength: 0
       },
-      focus: function() {
-        // prevent value inserted on focus
-        return false;
-      },
-      select: function(event, ui) {
-        var val = this.value;
-        var re = /[&|(]/g;
-        var end = 0;
-        while(re.test(val)) { end = re.lastIndex; }
-        this.value = val.substring(0,end) + ui.item.value + "=";
-        return false;
+      {
+        name: 'filter',
+        source: filterSuggestions,
+        limit: 200,
+        display: (a) => split(a,sep_filter)[1]
       }
+    )
+    .bind('typeahead:active', function() {
+      this.scrollLeft = this.scrollWidth;
+      var input = this;
+      setTimeout(function() { input.setSelectionRange(1000,1000); }, 1);
     })
-    .focus(function() { $(this).autocomplete('search'); });
+    .bind('typeahead:cursorchange', function(evt,suggestion) {
+      $(this).typeahead('val',$(this).typeahead('val'));
+      this.scrollLeft = this.scrollWidth;
+    })
+    .bind('typeahead:autocomplete', function(evt,suggestion) {
+      $(this).typeahead('val',suggestion + '=');
+      this.scrollLeft = this.scrollWidth;
+    })
+    .bind('typeahead:select', function(evt,suggestion) {
+      $(this).typeahead('val',suggestion + '=');
+      this.scrollLeft = this.scrollWidth;
+    });
 
-  $('#cleardef').button({icons:{primary:'ui-icon-cancel'},text:false}).click(function() {
-    $('#filter').val('');
+  $('#reset').click(function() {
+    $('#filter').typeahead('val','');
     filter = '';
+    window.sessionStorage.setItem('trace_flow_filter', filter);
+    window.history.replaceState({},'','index.html');
     stopPollTrace();
+    updateTrace({nodes:{},edges:{}});   
   });
-  $('#submitdef').button({icons:{primary:'ui-icon-check'},text:false}).click(function() {
+
+  $('#submit').click(function() {
     stopPollTrace();
-    filter = $.trim($('#filter').val());
+    filter = $.trim($('#filter').typeahead('val'));
+    window.sessionStorage.setItem('trace_flow_filter', filter);
+    window.history.replaceState({},'','index.html?filter='+encodeURIComponent(filter));
     pollTrace();
   });
 
-  nodes = new vis.DataSet([]);
-  edges = new vis.DataSet([]);
-
-  var container = document.getElementById('trace');
-
-  var data = {nodes:nodes, edges:edges};
-  var options = {
-    physics: {solver:'repulsion'},
-    edges: {arrows:'to'}
-  }; 
-  network = new vis.Network(container, data, options);   
+  if(filter) pollTrace();
 });

@@ -1,8 +1,10 @@
 // author: InMon Corp.
-// version: 1.0
-// date: 9/2/2017
+// version: 2.0
+// date: 11/17/2021
 // description: Top Flows
-// copyright: Copyright (c) 2017 InMon Corp. ALL RIGHTS RESERVED
+// copyright: Copyright (c) 2017-2021 InMon Corp. ALL RIGHTS RESERVED
+
+var minValue = getSystemProperty('sunburst.minValue') || 1;
 
 var keys = 'inputifindex,outputifindex';
 var value = 'frames';
@@ -47,10 +49,17 @@ function escapeRegExp(str) {
   return str ? str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") : null;
 }
 
-function updateTopology(top, name, fromnode, tonode) {
-  top.nodes[fromnode] = fromnode;
-  top.nodes[tonode] = tonode;
-  top.edges[name] = {from:fromnode,to:tonode};
+function updateTopology(top, link, fromnode, tonode) {
+  top.nodes[fromnode] = top.nodes[fromnode]||{};
+  top.nodes[tonode] = top.nodes[tonode]||{};
+  var edge = top.edges[link];
+  if(edge) {
+    if(edge.from !== fromnode) {
+      edge.bidirectional=true;
+    }
+  } else {
+    top.edges[link] = {from:fromnode,to:tonode,bidirectional:false};
+  }
 }
 
 function getTopology(name) {
@@ -61,6 +70,8 @@ function getTopology(name) {
     let agent = entry.agent;
     let keys = entry.topKeys;
     for(var j = 0; j < keys.length; j++) {
+      if(keys[j].value < minValue) break;
+
       let [input,output] = keys[j].key.split(',');
       let link = topologyInterfaceToLink(agent,input);
       if(link) {
@@ -68,8 +79,11 @@ function getTopology(name) {
       } else {
         let port = topologyInterfaceToPort(agent,input);
         if(port) {
-          let pname = '>'+port.node+'-'+(port.port||input);
-          updateTopology(top,pname,pname,port.node);
+          let pid = port.node+'-'+(port.port||input);
+          updateTopology(top,pid,pid,port.node);
+          top.edges[pid]['label'] = port.port||input;
+          top.nodes[pid]['label'] = port.port||input;
+          top.nodes[pid]['port'] = true;
         }
       }
       link = topologyInterfaceToLink(agent,output);
@@ -78,8 +92,11 @@ function getTopology(name) {
       } else {
         let port = topologyInterfaceToPort(agent,output);
         if(port) {
-          let pname = '<'+port.node+'-'+(port.port||output);
-          updateTopology(top,pname,port.node,pname);
+          let pid = port.node+'-'+(port.port||output);
+          updateTopology(top,pid,port.node,pid);
+          top.edges[pid]['label'] = port.port||output;
+          top.nodes[pid]['label'] = port.port||output;
+          top.nodes[pid]['port'] = true;
         }
       }
     }
