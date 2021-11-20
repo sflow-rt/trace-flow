@@ -81,10 +81,11 @@ function getTopology(name) {
       } else {
         let port = topologyInterfaceToPort(agent,input);
         if(port) {
+          let macs = topologyLocatedHostMacs(agent,input);
           let pid = port.node+'-'+(port.port||input);
           updateTopology(top,pid,pid,port.node);
           top.edges[pid]['label'] = port.port||input;
-          top.nodes[pid]['label'] = port.port||input;
+          top.nodes[pid]['label'] = macs.length == 1 ? macs[0] : port.port||input;
           top.nodes[pid]['port'] = true;
         }
       }
@@ -94,10 +95,11 @@ function getTopology(name) {
       } else {
         let port = topologyInterfaceToPort(agent,output);
         if(port) {
+          let macs = topologyLocatedHostMacs(agent,output);
           let pid = port.node+'-'+(port.port||output);
           updateTopology(top,pid,port.node,pid);
           top.edges[pid]['label'] = port.port||output;
-          top.nodes[pid]['label'] = port.port||output;
+          top.nodes[pid]['label'] = macs.length == 1 ? macs[0] : port.port||output;
           top.nodes[pid]['port'] = true;
         }
       }
