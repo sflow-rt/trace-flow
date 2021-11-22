@@ -1,6 +1,6 @@
 // author: InMon Corp.
-// version: 2.0
-// date: 11/18/2021
+// version: 2.1
+// date: 11/22/2021
 // description: Trace packet paths across topology
 // copyright: Copyright (c) 2017-2021 InMon Corp. ALL RIGHTS RESERVED
 
@@ -80,7 +80,7 @@ function getTopology(name) {
         updateTopology(top,link.linkname,link.remotenode,link.localnode);
       } else {
         let port = topologyInterfaceToPort(agent,input);
-        if(port) {
+        if(port&&'internal'!=input&&'unknown'!=input&&'multiple'!=input&&'discard'!=input) {
           let macs = topologyLocatedHostMacs(agent,input);
           let pid = port.node+'-'+(port.port||input);
           updateTopology(top,pid,pid,port.node);
@@ -94,7 +94,7 @@ function getTopology(name) {
         updateTopology(top,link.linkname,link.localnode,link.remotenode);
       } else {
         let port = topologyInterfaceToPort(agent,output);
-        if(port) {
+        if(port&&'internal'!=output&&'unknown'!=output&&'multiple'!=output&&'discard'!=output) {
           let macs = topologyLocatedHostMacs(agent,output);
           let pid = port.node+'-'+(port.port||output);
           updateTopology(top,pid,port.node,pid);
