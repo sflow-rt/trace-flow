@@ -1,8 +1,8 @@
 // author: InMon Corp.
-// version: 2.1
-// date: 11/22/2021
+// version: 2.2
+// date: 1/12/2022
 // description: Trace packet paths across topology
-// copyright: Copyright (c) 2017-2021 InMon Corp. ALL RIGHTS RESERVED
+// copyright: Copyright (c) 2017-2022 InMon Corp. ALL RIGHTS RESERVED
 
 var t = getSystemProperty('trace-flow.t') || 10;
 var n = getSystemProperty('trace-flow.n') || 10;
@@ -44,12 +44,6 @@ setIntervalHandler(function(now) {
     }
   }
 },10);
-
-function escapeRegExp(str) {
-  // seems like a bug - Rhino doesn't convert Java strings into native JavaScript strings
-  str = new String(str);
-  return str ? str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&") : null;
-}
 
 function updateTopology(top, link, fromnode, tonode) {
   top.nodes[fromnode] = top.nodes[fromnode]||{};
@@ -117,7 +111,7 @@ setHttpHandler(function(req) {
     result = [];
     search = req.query['search'];
     if(search) {
-      matcher = new RegExp('^' + escapeRegExp(search), 'i');
+      matcher = new RegExp('^' + search[0].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), 'i');
       for(key in flowKeys()) {
         if(matcher.test(key)) result.push(key);
       }
