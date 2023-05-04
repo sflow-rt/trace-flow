@@ -15,15 +15,15 @@
     <script type="text/javascript" src="js/app.js"></script>
     <title>Trace Flow</title>
   </head>
-  <body>
-    <nav class="navbar navbar-expand-sm navbar-dark mb-3" style="background-color: #336;">
-      <a class="navbar-brand" href="#">
-        <img src="../../../inc/img/inmon.svg" height="30" class="d-inline-block align-top">
-        Trace Flow
-      </a>
-    </nav>
-    <main class="container-fluid" role="main">
-      <form autocomplete="off">
+  <body class="d-flex flex-column">
+    <div class="d-flex flex-column overflow-hidden min-vh-100 vh-100">
+      <nav class="navbar navbar-expand-sm navbar-dark mb-3" style="background-color: #336;">
+        <a class="navbar-brand" href="#">
+          <img src="../../../inc/img/inmon.svg" height="30" class="d-inline-block align-top">
+          Trace Flow
+        </a>
+      </nav>
+      <form autocomplete="off" class="mx-3">
         <div class="form-row">
           <div class="col-lg-10 mb-3">
             <input type="text" class="typeahead form-control" id="filter" placeholder="Filter">
@@ -36,12 +36,12 @@
           </div>
         </div>
       </form>
-      <div id="trace"></div>
-    </main>
-    <footer class="footer page-footer border-top mt-3">
-       <div class="footer-copyright text-center py-2">
-         <small class="text-muted">Copyright &copy; 2017-2021 InMon Corp. ALL RIGHTS RESERVED</small>
-       </div>
-    </footer>
+      <div id="trace" class="flex-grow-1 overflow-auto mx-3 border"></div>
+      <footer class="container-fluid flex-grow-0 flex-shrink-1 footer page-footer border-top mt-3">
+        <div class="footer-copyright text-center py-2">
+          <small class="text-muted">Copyright &copy; 2017-2023 InMon Corp. ALL RIGHTS RESERVED</small>
+        </div>
+      </footer>
+    </div>
   </body>
 </html>
